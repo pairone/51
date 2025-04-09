@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>大湾区黄金周全攻略地图</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <style>
+        #map { height: 800px; width: 100%; }
+        .legend { 
+            padding: 15px;
+            background: rgba(255,255,255,0.95);
+            border-radius: 8px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.2);
+            font-family: Arial;
+        }
+        .route-line { 
+            stroke: #FF6B6B;
+            stroke-width: 4;
+            stroke-dasharray: 10 5;
+            animation: flow 2s linear infinite;
+        }
+        @keyframes flow { to { stroke-dashoffset: -15; } }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://webapi.amap.com/maps?v=2.0&key=您的高德API_KEY"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-amap@1.0.0/leaflet-amap.js"></script>
+
+    <script>
+        // 初始化地图
+        var map = L.map('map').setView([22.5431, 114.0579], 9);
+
+        // 高德地图底图
+        L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+            subdomains: ['1','2','3','4'],
+            attribution: '高德地图'
+        }).addTo(map);
+
+        // 自定义图标系统
+        var icons = {
+            景点: L.icon({
+                iconUrl: 'https://cdn.jsdelivr.net/gh/pointhi/leaflet-color-markers@master/img/marker-icon-2x-red.png',
+                iconSize: [32, 52],
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png'
+            }),
+            酒店: L.icon({
+                iconUrl: 'https://cdn.jsdelivr.net/gh/pointhi/leaflet-color-markers@master/img/marker-icon-2x-blue.png',
+                iconSize: [32, 52],
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png'
+            }),
+            美食: L.icon({
+                iconUrl: 'https://cdn.jsdelivr.net/gh/pointhi/leaflet-color-markers@master/img/marker-icon-2x-green.png',
+                iconSize: [32, 52],
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png'
+            })
+        };
+
+        // 完整坐标数据（GCJ-02坐标系）
+        var markers = [
+            // Day1 深圳
+            {type:"景点", coords:[22.5333, 113.9833], title:"华侨城创意园", desc:"文艺聚集地"},
+            {type:"景点", coords:[22.5425, 113.9338], title:"南头古城"},
+            {type:"景点", coords:[22.5214, 113.9467], title:"人才公园"},
+            {type:"美食", coords:[22.5385, 114.0256], title:"润园四季椰子鸡"},
+            {type:"美食", coords:[22.5351, 113.9462], title:"八合里牛肉火锅"},
+            {type:"酒店", coords:[22.5236, 114.0519], title:"福田麗枫酒店"},
+
+            // Day2 香港
+            {type:"景点", coords:[22.3361, 114.1953], title:"黄大仙祠"},
+            {type:"景点", coords:[22.3305, 114.2078], title:"彩虹邨"},
+            {type:"景点", coords:[22.2817, 114.1297], title:"西环泳棚"},
+            {type:"景点", coords:[22.2758, 114.1494], title:"太平山顶"},
+            {type:"美食", coords:[22.3124, 114.2256], title:"华嫂冰室"},
+
+            // Day3 澳门→珠海
+            {type:"景点", coords:[22.1155, 113.5583], title:"路环岛"},
+            {type:"景点", coords:[22.1936, 113.5431], title:"大三巴牌坊"},
+            {type:"美食", coords:[22.1538, 113.5592], title:"海湾餐厅"},
+            {type:"酒店", coords:[22.2156, 113.5567], title:"中邦艺术酒店"},
+
+            // Day4 珠海
+            {type:"景点", coords:[22.2475, 113.5623], title:"北山村"},
+            {type:"景点", coords:[22.2783, 113.5762], title:"景山道"},
+            {type:"美食", coords:[22.2691, 113.5724], title:"燊记食店"},
+
+            // Day5 顺德
+            {type:"景点", coords:[22.8385, 113.2456], title:"清晖园"},
+            {type:"景点", coords:[22.8627, 113.1952], title:"逢简水乡"},
+            {type:"美食", coords:[22.8473, 113.2541], title:"猪肉婆私房菜"},
+            {type:"酒店", coords:[22.8412, 113.2489], title:"亚朵酒店"},
+
+            // Day6 广州
+            {type:"景点", coords:[23.1156, 113.2644], title:"永庆坊"},
+            {type:"景点", coords:[23.1239, 113.2958], title:"东山口"},
+            {type:"景点", coords:[23.1194, 113.3245], title:"广东省博物馆"},
+            {type:"美食", coords:[23.1276, 113.3182], title:"炳胜品味"}
+        ];
+
+        // 添加所有标记
+        markers.forEach(marker => {
+            L.marker(marker.coords, { 
+                icon: icons[marker.type],
+                riseOnHover: true 
+            }).bindPopup(`
+                <b style="color:#${marker.type==='景点'?'FF4444':marker.type==='酒店'?'3399FF':'00AA00'}">${marker.title}</b>
+                <hr style="margin:5px 0">
+                <small>${marker.desc || '点击查看详情'}</small>
+            `).addTo(map);
+        });
+
+        // 添加城际移动路线
+        var routes = [
+            { // 深圳→香港
+                path: [[22.5333,113.9833],[22.3361,114.1953]],
+                color: "#FFA500",
+                text: "Day2 深圳→香港"
+            },
+            { // 香港→澳门
+                path: [[22.2758,114.1494],[22.1155,113.5583]],
+                color: "#00C853",
+                text: "Day3 香港→澳门"
+            },
+            { // 澳门→珠海
+                path: [[22.1936,113.5431],[22.2156,113.5567]],
+                color: "#0091EA",
+                text: "Day3 澳门→珠海"
+            },
+            { // 珠海→顺德
+                path: [[22.2475,113.5623],[22.8385,113.2456]],
+                color: "#AA00FF",
+                text: "Day5 珠海→顺德"
+            },
+            { // 顺德→广州
+                path: [[22.8385,113.2456],[23.1156,113.2644]],
+                color: "#FF6D00",
+                text: "Day6 顺德→广州"
+            }
+        ];
+
+        routes.forEach(route => {
+            L.polyline(route.path, {
+                color: route.color,
+                weight: 4,
+                className: 'route-line'
+            }).bindTooltip(route.text, {
+                permanent: false,
+                direction: 'top'
+            }).addTo(map);
+        });
+
+        // 动态图例
+        var legend = L.control({position: 'bottomright'});
+        legend.onAdd = () => {
+            let div = L.DomUtil.create('div', 'legend');
+            div.innerHTML = `
+                <h4 style="margin:0 0 10px 0;color:#333">图例说明</h4>
+                <div style="display:flex;align-items:center;margin:5px 0">
+                    <img src="https://cdn.jsdelivr.net/gh/pointhi/leaflet-color-markers@master/img/marker-icon-2x-red.png" width="24">
+                    <span style="margin-left:8px;color:#666">景点</span>
+                </div>
+                <div style="display:flex;align-items:center;margin:5px 0">
+                    <img src="https://cdn.jsdelivr.net/gh/pointhi/leaflet-color-markers@master/img/marker-icon-2x-blue.png" width="24">
+                    <span style="margin-left:8px;color:#666">酒店</span>
+                </div>
+                <div style="display:flex;align-items:center;margin:5px 0">
+                    <img src="https://cdn.jsdelivr.net/gh/pointhi/leaflet-color-markers@master/img/marker-icon-2x-green.png" width="24">
+                    <span style="margin-left:8px;color:#666">美食</span>
+                </div>
+                <div style="margin:15px 0;border-top:2px solid #ddd"></div>
+                <div style="color:#666">路线说明 ➤</div>
+                <div style="display:flex;align-items:center;margin:5px 0">
+                    <div style="width:20px;height:4px;background:#FFA500"></div>
+                    <span style="margin-left:8px">深圳→香港</span>
+                </div>
+                <div style="display:flex;align-items:center;margin:5px 0">
+                    <div style="width:20px;height:4px;background:#00C853"></div>
+                    <span style="margin-left:8px">香港→澳门</span>
+                </div>
+            `;
+            return div;
+        };
+        legend.addTo(map);
+    </script>
+</body>
+</html>
